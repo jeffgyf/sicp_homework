@@ -1,4 +1,4 @@
-;E2.56
+;E2.58
 (define (deriv expr var)
     (cond 
         ((number? expr) 0)
@@ -29,12 +29,7 @@
         ((and (number? a1) (number? a2)) (+ a1 a2))
         ((eq? a1 0) a2)
         ((eq? a2 0) a1)
-        ((or (sum? a1) (sum? a2))
-            (cond 
-                ((and (sum? a1) (sum? a2)) (append a1 (cdr a2)))
-                ((sum? a2) (cons '+ (cons a1 (cdr a2))))
-                ((sum? a1) (append a1 (list a2)))))
-        (else (list '+ a1 a2))))
+        (else (list a1 '+ a2))))
 
 (define (make-product m1 m2) 
     (cond 
@@ -42,12 +37,7 @@
         ((or (eq? m1 0) (eq? m2 0)) 0)
         ((eq? m1 1) m2)
         ((eq? m2 1) m1)
-        ((or (product? m1) (product? m2))
-            (cond 
-                ((and (product? m1) (product? m2)) (append m1 (cdr m2)))
-                ((product? m2) (cons '* (cons m1 (cdr m2))))
-                ((product? m1) (append m1 (list m2)))))
-        (else (list '* m1 m2)))
+        (else (list m1 '* m2)))
 )
 
 (define (make-exp base expn)
@@ -67,21 +57,21 @@
     (caddr exp))
 
 (define (sum? x)
-    (and (pair? x) (eq? (car x) '+)))
+    (and (pair? x) (eq? (cadr x) '+)))
 
-(define (addend s) (cadr s))
+(define (addend s) (car s))
 
 (define (augend s) 
     (cond
-        ((> (length s) 3) (cons '+ (cddr s)))
+        ((> (length s) 3) (cddr s))
         (else (caddr s))))
 
 (define (product? x)
-    (and (pair? x) (eq? (car x) '*)))
+    (and (pair? x) (eq? (cadr x) '*)))
     
-(define (multiplier p) (cadr p))
+(define (multiplier p) (car p))
 
 (define (multiplicand p) 
     (cond
-        ((> (length p) 3) (cons '* (cddr p)))
         (else (caddr p))))
+;关键是对于第二项的处理，加法第二项为到底为止的所有项组成的列表，而乘法第二项就是第二项本身，这样则确保同级别乘法会优先进行
