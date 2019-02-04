@@ -7,7 +7,7 @@
     ((get 'make 'real) (/ (numer r) (denom r)))))
 ;real
 (put 'raise 'real (lambda (r) 
-    ((get 'make=from-real-imag 'complex) r 0)))
+    ((get 'make-from-real-imag 'complex) r 0)))
 
 (define (apply-generic op . args)
     (let ((type-tags (map type-tag args)))
