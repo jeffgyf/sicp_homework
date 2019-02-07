@@ -21,8 +21,8 @@
 ;2.79-2.80
 (define (equ? d1 d2)
     (apply-generic 'equ? d1 d2))
-(define (=zero? d1 d2) 
-    (apply-generic '=zero? d1))
+(define (=zero? d) 
+    (apply-generic '=zero? d))
 ;scheme-number-package
 (put 'equ? '(scheme-number scheme-number) =)
 (put '=zero? '(scheme-number) 
