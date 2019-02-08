@@ -114,16 +114,25 @@
                         (mul (coeff t1) (coeff t2)))
                     (mul-term-by-all-terms t1 (rest-terms L))))))
     (define (zero? p)
-        (define (allzero? term-list)
+        (define (allzero? tlist)
             (cond 
-                ((null? term-list) #t)
-                (else (and (=zero? (car term-list)) (allzero? (cdr term-list))))))
-        (allzero? (term-list p)))
+                ((null? tlist) #t)
+                (else (and (=zero? (car tlist)) (allzero? (cdr tlist))))))
+        (allzero? (map coeff (term-list p))))
+    (define (pneg p)
+        (define (allneg tlist)
+            (cond 
+                ((null? tlist) '())
+                (else (cons 
+                    (make-term (order (car tlist))(neg (coeff (car tlist))))
+                    (allneg (cdr tlist))))))
+        (tag (make-poly (variable p) (allneg (term-list p)))))
     ;; interface to rest of the system
     (define (tag p) (attach-tag 'polynomial p))
     (put 'add '(polynomial polynomial) (lambda (p1 p2) (tag (add-poly p1 p2))))
     (put 'mul '(polynomial polynomial) (lambda (p1 p2) (tag (mul-poly p1 p2))))
     (put 'make 'polynomial (lambda (var terms) (tag (make-poly var terms))))
+    (put 'neg '(polynomial) pneg)
     (put '=zero? '(polynomial) zero?)
 'done)
 
@@ -141,3 +150,14 @@
     (cond 
         ((and (number? d1) (number? d2)) (* d1 d2))
         (else (apply-generic 'mul d1 d2))))
+
+(define (neg d)
+    (cond 
+        ((number? d) (- d))
+        (else (apply-generic 'neg d))))
+
+(define (sub d1 d2)
+    (add d1 (neg d2)))
+
+(install-polynomial-package)
+(define p1 ((get 'make 'polynomial) 'x '((1 1) (0 5))))
