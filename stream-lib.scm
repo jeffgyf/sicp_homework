@@ -7,11 +7,11 @@
     ((_ exp1 exp2) (cons exp1 (lambda () exp2)))))
 
 (define (memo-proc proc)
-    (let ((already-run? false) (result false))
+    (let ((already-run? #f) (result #f))
         (lambda ()
             (if (not already-run?)
                 (begin (set! result (proc))
-                (set! already-run? true)
+                (set! already-run? #t)
                 result)
                 result))))
 
@@ -48,20 +48,31 @@
             (stream-enumerate-interval (+ low 1) high))))
 
 
-
 (define (display-line x)
     (display x)
     (newline))
 
-(define (show x)
-    (display-line x)
-    x)
+(define (stream-for-each proc s)
+    (if (stream-null? s)
+        'done
+        (begin 
+            (proc (stream-car s))
+            (stream-for-each proc (stream-cdr s)))))
 
-(define showx
-    ((lambda ()
-        (define x 1)
-        (lambda ()
-            (set! x (+ x 1))
-            (show x)
-            x)
-        )))
+(define (display-stream s)
+    (stream-for-each 
+        (lambda (s) 
+            (display s)
+            (display " ")) 
+        s))
+
+(define (stream-filter pred s)
+    (cond 
+        ((stream-null? s) the-empty-stream)
+        ((pred (stream-car s)) (cons-stream (stream-car s) (stream-filter pred (stream-cdr s))))
+        (else (stream-filter pred (stream-cdr s)))))
+
+(define (stream-enumerate-interval a b)
+    (cond 
+        ((> a b) the-empty-stream)
+        (else (cons-stream a (stream-enumerate-interval (+ a 1) b)))))
