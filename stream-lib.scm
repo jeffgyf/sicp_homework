@@ -30,11 +30,13 @@
 
 
 
-(define (stream-map proc s)
-    (if (stream-null? s)
+(define (stream-map proc . argstreams)
+    (if (stream-null? (car argstreams))
         the-empty-stream
-        (cons-stream (proc (stream-car s))
-        (stream-map proc (stream-cdr s)))))
+        (cons-stream
+            (apply proc (map stream-car argstreams))
+            (apply stream-map
+                (cons proc (map stream-cdr argstreams))))))
 
 (define the-empty-stream '())
 
@@ -59,12 +61,12 @@
             (proc (stream-car s))
             (stream-for-each proc (stream-cdr s)))))
 
-(define (display-stream s)
-    (stream-for-each 
-        (lambda (s) 
-            (display s)
-            (display " ")) 
-        s))
+(define (display-stream s n)
+    (cond 
+        ((> n 0)
+            (display (stream-car s))
+            (display " ")
+            (display-stream (stream-cdr s) (- n 1)))))
 
 (define (stream-filter pred s)
     (cond 
@@ -76,3 +78,25 @@
     (cond 
         ((> a b) the-empty-stream)
         (else (cons-stream a (stream-enumerate-interval (+ a 1) b)))))
+
+(define (add-streams s1 s2)
+    (stream-map + s1 s2))
+
+(define ones
+    (cons-stream 1 ones))
+
+(define integers 
+    (cons-stream 1 (add-streams integers ones)))
+
+(define (mul-streams s1 s2)
+    (stream-map * s1 s2))
+
+(define (div-streams s1 s2)
+    (stream-map / s1 s2))
+
+
+(define (partial-sums s)
+    (cons-stream (stream-car s) (add-streams (partial-sums s) (stream-cdr s))))
+
+(define (scale-stream s n)
+    (stream-map (lambda (e) (* e n)) s))
