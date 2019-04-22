@@ -73,3 +73,48 @@
 
 (define tan-series
     (div-series sine-series cosine-series))
+
+;E3.64
+(define (sqrt-stream x)
+    (define guesses
+        (cons-stream 1.0
+            (stream-map (lambda (guess)
+            (sqrt-improve guess x))
+            guesses)))
+    guesses)
+
+(define (sqrt-improve guess x)
+    (/ (+ guess (/ x guess)) 2))
+
+(define (stream-limit s tolerance)
+    (let 
+        ((s1 (stream-car s))
+        (s2 (stream-car (stream-cdr s))))
+        (cond 
+            ((< (abs (- s1 s2)) tolerance) s2)
+            (else (stream-limit (stream-cdr s) tolerance)))))
+
+(define (sqrt x tolerance)
+    (stream-limit (sqrt-stream x) tolerance))
+
+(define ln2-series
+    ((lambda () 
+        (define (series n)
+            (cons-stream (/ 1 n) (scale-stream (series (+ n 1)) -1)))
+        (series 1))))
+
+(define ln2
+    (partial-sums ln2-series))
+
+(define (euler-transform s)
+    (let 
+        ((s0 (stream-ref s 0)) ; S n-1
+        (s1 (stream-ref s 1)) ; S n
+        (s2 (stream-ref s 2))) ; S n+1
+        (cons-stream 
+            (- s2 (/ (square (- s2 s1))
+                (+ s0 (* -2 s1) s2)))
+            (euler-transform (stream-cdr s)))))
+
+(define (square n)
+    (* n n))
