@@ -107,3 +107,11 @@
         (cons-stream (stream-car s1)
             (interleave s2 (stream-cdr s1)))))
 
+(define (integral integrand initial-value dt)
+    (define int
+        (cons-stream 
+            initial-value
+            (add-streams 
+                (scale-stream integrand dt)
+                int)))
+    int)
